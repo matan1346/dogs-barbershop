@@ -3,8 +3,81 @@
 html, body { height: 100%; }
 body {
   margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: #a7c9f58c;
-  // background-image: url("./assets/barber-dog.jpg");
+  /*background-color: #a7c9f58c;*/
+  //  background-image: url("./assets/group-portrait-adorable-puppies.jpg");
   // background-repeat: no-repeat, repeat;
-  // background-size: 50%;
+  // background-size:cover;
+  // opacity: 0.6;
+}
+
+body::after {
+  content: "";
+  background: url("./assets/group-portrait-adorable-puppies.jpg");
+  background-repeat: no-repeat, repeat;
+  background-size:cover;
+  opacity: 0.5;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  z-index: -1;
+}
+
+
+.snackbar{
+  // background-color: #3dbbd0d1;
+  // color: white;
+  color: #000;
+  font-weight: 500;
+  background-color: white;
+
+  display: flex;
+  padding: 6px 16px;
+  font-size: 0.875rem;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 400;
+  line-height: 1.43;
+  border-radius: 4px;
+  letter-spacing: 0.01071em;
+  /*background-color: transparent;*/
+
+  &.snackbar-success {
+    color: #f0fff3;
+    background-color: #1f606f !important;
+
+  }
+
+  &.snackbar-warning {
+    color: #f0fff3;
+    background-color: #a84740 !important;
+  }
+
+  &.snackbar-error {
+    color: #f0fff3;
+    background-color: #a84740 !important;
+  }
+
+
+  .mat-simple-snackbar-action{
+    color: #000;
+  }
+
+
+  // .snackbar-container {
+  //   margin-top: 70px !important;
+  //   color: beige;
+  //   &.error {
+  //     background-color: #c62828 !important;
+  //   }
+  //   &.success {
+  //     background-color: #2e7d32 !important;
+  //   }
+
+  //   &.warning {
+  //     background-color: #ff8f00 !important;
+  //   }
+  // }
+
+
 }

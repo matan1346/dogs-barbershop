@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/core/services/authentication.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
 
 @Component({
   selector: 'app-login',
@@ -21,7 +22,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private formBuild: FormBuilder,
     private authenticationService: AuthenticationService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
     ) { }
 
   ngOnInit(): void {
@@ -46,11 +48,13 @@ export class LoginComponent implements OnInit {
     let ans = await this.authenticationService.Login(loginDetails);
     // if true -> logged successfully
     if(ans){
+      this.notificationService.Success('Logged in Successfully');
       this.router.navigate(['list-clients']);
     }
     else{
       // else, username or password are wrong
-      alert("Username or password are incorrect, please try again");
+      this.notificationService.Error('Username or password are incorrect, please try again');
+      //alert("Username or password are incorrect, please try again");
     }
   }
 }

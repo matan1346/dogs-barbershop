@@ -1,12 +1,14 @@
 import { formatDate } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { BarberClient } from 'src/app/core/models/barber-client.model';
 import { ScheduleClient, ScheduleStatus } from 'src/app/core/models/schedule-client.model';
 import { APIService } from 'src/app/core/services/api.service';
 import { AuthenticationService } from 'src/app/core/services/authentication.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
 import { EditScheduleComponent } from '../edit-schedule/edit-schedule.component';
 import { ViewScheduleComponent } from '../view-schedule/view-schedule.component';
 
@@ -15,7 +17,7 @@ import { ViewScheduleComponent } from '../view-schedule/view-schedule.component'
   templateUrl: './list-clients.component.html',
   styleUrls: ['./list-clients.component.scss']
 })
-export class ListClientsComponent implements OnInit {
+export class ListClientsComponent implements OnInit, OnDestroy {
 
   // the filtered values
   filterValues = {};
@@ -29,11 +31,15 @@ export class ListClientsComponent implements OnInit {
   // display columns
   displayedColumns: string[] = ['scheduleID', 'Name', 'time', 'registered','actions'];
 
+  // list of subscribers
+  subscribersList: Subscription[] = [];
+
   constructor(
     private apiService: APIService,
     private authenticationService: AuthenticationService,
     private router: Router,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private notificationService: NotificationService
     ) {
 
 // Object to create Filter for
@@ -58,14 +64,14 @@ this.filterSelectObj = [
 
 
     // subscribe to authenticate user if current user object is logged in
-    this.authenticationService.getLoggedClient().subscribe(x => {
+    this.subscribersList.push(this.authenticationService.getLoggedClient().subscribe(x => {
       this.authClient = x;
-    })
+    }));
 
     // load list of schedules via server
     await this.apiService.loadListSchedules();
     // subscribe to schedule server list
-    this.apiService.getSchedulesList().subscribe(schList => {
+    this.subscribersList.push(this.apiService.getSchedulesList().subscribe(schList => {
       schList.map(m => {
         // for filter
         m['firstName'] = m.client.firstName;
@@ -78,8 +84,13 @@ this.filterSelectObj = [
       this.filterSelectObj.filter((o) => {
         o.options = this.getFilterObject(schList, o.columnProp);
       });
-    })
+    }));
   }
+
+  ngOnDestroy(): void{
+    this.subscribersList.map(x => x.unsubscribe());
+  }
+
 
   // action button - create - open dialog for create new schedule
   CreateScheduleClient(): void{
@@ -124,12 +135,13 @@ this.filterSelectObj = [
     let res = await this.apiService.DeleteSchedule(client.scheduleID);
     // get status message text
     let statusMessage = this.apiService.getResonseText(res);
-    // print the status message
-    console.log('delete schedule status: ' + statusMessage);
 
     // if status is ok -> navigate to list clients
     if(res == ScheduleStatus.OK){
+      this.notificationService.Success('The schedule has been deleted from the list');
       this.router.navigate(['list-clients']);
+    }else{
+      this.notificationService.Error(statusMessage);
     }
   }
 

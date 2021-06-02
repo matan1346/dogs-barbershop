@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/core/services/authentication.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -23,7 +24,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private formBuild: FormBuilder,
     private authenticationService: AuthenticationService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -49,11 +51,12 @@ export class RegisterComponent implements OnInit {
     let ans = await this.authenticationService.Register(registerDetails);
     // if true -> registered success
     if(ans){
+      this.notificationService.Success('The details of the user `' + registerDetails.userName + '` has been registered successfully');
       this.router.navigate(['login']);
     }
     else{
       // else, username is already exists
-      alert("Username is already exists, try another");
+      this.notificationService.Error("Username is already exists, try another");
     }
   }
 }

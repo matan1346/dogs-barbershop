@@ -1,13 +1,14 @@
 import { formatDate } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { BarberClient } from 'src/app/core/models/barber-client.model';
 import { ScheduleClient, ScheduleStatus } from 'src/app/core/models/schedule-client.model';
 import { APIService } from 'src/app/core/services/api.service';
 import { AuthenticationService } from 'src/app/core/services/authentication.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
 import { BarberShopModule } from '../barber-shop.module';
 
 export interface TimeSelect {
@@ -20,7 +21,7 @@ export interface TimeSelect {
   templateUrl: './edit-schedule.component.html',
   styleUrls: ['./edit-schedule.component.scss']
 })
-export class EditScheduleComponent implements OnInit {
+export class EditScheduleComponent implements OnInit, OnDestroy {
   // form group of schedule form
   scheduleForm: FormGroup;
   // current user object
@@ -35,6 +36,9 @@ export class EditScheduleComponent implements OnInit {
   dialogUser: BehaviorSubject<BarberClient> = new BehaviorSubject<BarberClient>(null);
   dialogSchedule: BehaviorSubject<ScheduleClient> = new BehaviorSubject<ScheduleClient>(null);
   dialogModeCreate: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+  // list of subscribers
+  subscribersList: Subscription[] = [];
 
 
 
@@ -68,7 +72,8 @@ export class EditScheduleComponent implements OnInit {
     private apiService: APIService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private dialogRef: MatDialogRef<EditScheduleComponent>
+    private dialogRef: MatDialogRef<EditScheduleComponent>,
+    private notificationService: NotificationService
     ) { }
 
   ngOnInit(): void {
@@ -81,12 +86,12 @@ export class EditScheduleComponent implements OnInit {
     });
 
     // subscribe to dialog user changed current user
-    this.dialogUser.subscribe( x => {
+    this.subscribersList.push(this.dialogUser.subscribe( x => {
       this.authClient = x;
-    });
+    }));
 
     // subscribe to dialog schedule changed current schedule
-    this.dialogSchedule.subscribe( x => {
+    this.subscribersList.push(this.dialogSchedule.subscribe( x => {
       this.scheduleClient = x;
 
       // if edit existing schedule mode -> set the date and time values in the form
@@ -103,52 +108,56 @@ export class EditScheduleComponent implements OnInit {
         this.scheduleForm.controls['selectTimeHour'].setValue(splitTime[0]);
         this.scheduleForm.controls['selectTimeMinute'].setValue(splitTime[1]);
       }
-    });
+    }));
 
     // subscribe to dialog create mode changed create mode
-    this.dialogModeCreate.subscribe(x => {
+    this.subscribersList.push(this.dialogModeCreate.subscribe(x => {
       this.createMode = x;
-    })
+    }));
 
     // subscribe to authenticate of current user object logged in
-    this.authenticationService.getLoggedClient().subscribe(x => {
+    this.subscribersList.push(this.authenticationService.getLoggedClient().subscribe(x => {
       // if not logged in/ current user object is not set or null -> cannot edit or create without being logged in
       if(!x)
       {
-        console.log("Cannot edit/create without login");
+        this.notificationService.Error('Cannot edit/create without login');
         this.router.navigate(['login']);
       }
       else{
         // else, if current user object is authenticate, than set the local user as authenticate user
         this.authClient = x;
       }
-    });
+    }));
 
     // subcribe to activated params in the url, if schedule id exists -> than use its value to get schedule item
-    this.activatedRoute.params.subscribe(p => {
+    this.subscribersList.push(this.activatedRoute.params.subscribe(p => {
       // if schedule id pram exists -> use its value to get schedule item
       if(p.hasOwnProperty('schedule_id'))
       {
         let scheduleID = p['schedule_id'];
         // subscribe to list of schedule items
-        this.apiService.getSchedulesList().subscribe( x => {
+        this.subscribersList.push(this.apiService.getSchedulesList().subscribe( x => {
           // search for specific index by schedule id
           let index = x.findIndex(s => s.scheduleID == scheduleID);
           // if schedule id was not found -> navigate to list clients
           if(index < 0)
           {
-            console.log("schedule id " + scheduleID + 'doesnot exist');
+            this.notificationService.Error("schedule id " + scheduleID + 'does not exist');
             this.router.navigate(['list-clients']);
           }
           else // else -> update current schedule object
             this.dialogSchedule.next(x[index]);
 
-        });
+        }));
       }
       else if(!this.scheduleClient) { // for dialog not reset to create mode
         this.dialogModeCreate.next(true);
       }
-    })
+    }));
+  }
+
+  ngOnDestroy(): void{
+    this.subscribersList.map(x => x.unsubscribe());
   }
 
   // getting the date time concat by date & time
@@ -186,13 +195,18 @@ export class EditScheduleComponent implements OnInit {
       let statusMessage = this.apiService.getResonseText(res);
 
       // printing status to screen
-      console.log('create schedule status: ' + statusMessage);
+      //console.log('create schedule status: ' + statusMessage);
+
 
       // if status is ok -> close dialog if need to/navigate
       if(res == ScheduleStatus.OK){
+        this.notificationService.Success('New schedule has been added: ' + formatDate(dateTime, 'dd/MM/yyyy HH:mm', 'en'));
         if(this.dialogRef)
           this.dialogRef.close();
         this.router.navigate(['list-clients']);
+      }
+      else{
+        this.notificationService.Error(statusMessage);
       }
   }
 
@@ -208,10 +222,12 @@ export class EditScheduleComponent implements OnInit {
 
       // if status is ok -> close dialog if need to/navigate
       if(res == ScheduleStatus.OK){
-
+        this.notificationService.Success('The time schedule has been updated to ' + formatDate(dateTime, 'dd/MM/yyyy HH:mm', 'en'));
         if(this.dialogRef)
           this.dialogRef.close();
         this.router.navigate(['list-clients']);
+      }else{
+        this.notificationService.Error(statusMessage);
       }
     }
 }
