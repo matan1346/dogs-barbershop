@@ -1,0 +1,25 @@
+<mat-card>
+  <mat-card-title>Login</mat-card-title>
+  <!-- Login form -->
+  <form class="example-form" [formGroup]="loginForm" (ngSubmit)="OnLogin()">
+
+    <!-- Usernamee field -->
+    <mat-form-field class="example-full-width">
+      <mat-label>Username</mat-label>
+      <input matInput placeholder="Username" autocomplete="off" formControlName="userName">
+    </mat-form-field>
+
+    <!-- Password field -->
+    <mat-form-field class="example-full-width">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" placeholder="Password" autocomplete="off" formControlName="password">
+    </mat-form-field>
+
+    <!-- Action Button | Login -->
+    <button mat-stroked-button type="submit" [disabled]="loginForm.invalid"> Login </button>
+  </form>
+</mat-card>
+
+
+
+

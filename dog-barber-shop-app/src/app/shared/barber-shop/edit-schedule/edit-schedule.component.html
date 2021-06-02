@@ -1,0 +1,57 @@
+
+<mat-card>
+  <!-- Schedule Title -->
+  <mat-card-title>Schedule for user {{authClient.userName}} ({{authClient.firstName}})</mat-card-title>
+
+  <form class="example-form" [formGroup]="scheduleForm" (ngSubmit)="OnSend()">
+
+    <!-- Date input | Choosing a Date -->
+    <mat-form-field appearance="fill" class="example-full-width">
+      <mat-label>Choose a date</mat-label>
+      <input matInput [matDatepicker]="scheduleDate" autocomplete="off" formControlName="scheduleDate">
+      <mat-datepicker-toggle matSuffix [for]="scheduleDate"></mat-datepicker-toggle>
+      <mat-datepicker #scheduleDate>
+      </mat-datepicker>
+    </mat-form-field>
+
+    <!-- <mat-form-field class="example-full-width">
+      <mat-label>Time</mat-label>
+      <input matInput type="time" placeholder="Time" autocomplete="off" formControlName="scheduleTime" min="08:00" max="16:30" step="600">
+    </mat-form-field> -->
+
+    <!-- Time inputs -->
+    <div class="example-full-width">
+
+      <!-- Hour input | Choose an Hour -->
+      <mat-form-field appearance="fill">
+        <mat-label>Hour</mat-label>
+        <mat-select formControlName="selectTimeHour" required>
+          <mat-option>Pick an Hour</mat-option>
+          <mat-option *ngFor="let hour of hours" [value]="hour.display">
+            {{hour.display}}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="scheduleForm.controls['selectTimeHour'].hasError('required')">Please choose an hour</mat-error>
+        <!-- <mat-hint>{{animalControl.value?.sound}}</mat-hint> -->
+      </mat-form-field>
+
+      <!-- Minute input | Choose an Minute -->
+      <mat-form-field appearance="fill">
+        <mat-label>Minute</mat-label>
+        <mat-select formControlName="selectTimeMinute" required>
+          <mat-option>Pick an Minute</mat-option>
+          <mat-option *ngFor="let minute of minutes" [value]="minute.display">
+            {{minute.display}}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="scheduleForm.controls['selectTimeMinute'].hasError('required')">Please choose an minute</mat-error>
+        <!-- <mat-hint>{{animalControl.value?.sound}}</mat-hint> -->
+      </mat-form-field>
+  </div>
+
+
+    <!-- Action Buttons | Create & Update -->
+    <button mat-stroked-button *ngIf="createMode" type="submit" [disabled]="!scheduleForm || scheduleForm.invalid">Create</button>
+    <button mat-stroked-button *ngIf="!createMode" type="submit" [disabled]="!scheduleForm || scheduleForm.invalid">Update</button>
+  </form>
+</mat-card>

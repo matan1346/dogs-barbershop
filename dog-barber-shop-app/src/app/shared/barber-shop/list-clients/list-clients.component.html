@@ -1,0 +1,60 @@
+<div class="list-wrapper">
+  <mat-card-title>Schedule List</mat-card-title>
+
+  <table mat-table [dataSource]="scheduleList" class="schedule-table mat-elevation-z8">
+
+    <!--- Note that these columns can be defined in any order.
+          The actual rendered columns are set as a property on the row definition" -->
+
+    <!-- ID Column -->
+    <ng-container matColumnDef="scheduleID">
+      <th mat-header-cell *matHeaderCellDef> ID </th>
+      <td mat-cell *matCellDef="let element"> {{element.scheduleID}} </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="Name">
+      <th mat-header-cell *matHeaderCellDef> Name </th>
+      <td mat-cell *matCellDef="let element"> {{element.client.firstName}} </td>
+    </ng-container>
+
+    <!-- Schedule Time Column -->
+    <ng-container matColumnDef="time">
+      <th mat-header-cell *matHeaderCellDef> Schedule Time </th>
+      <td mat-cell *matCellDef="let element"> {{element.scheduleTime | date:'dd/MM/yyyy HH:mm'}} </td>
+    </ng-container>
+
+    <!-- Registered Date Column -->
+    <ng-container matColumnDef="registered">
+      <th mat-header-cell *matHeaderCellDef> Registered Date </th>
+      <td mat-cell *matCellDef="let element"> {{element.registeredRecord | date:'dd/MM/yyyy HH:mm'}} </td>
+    </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>
+          <div style="text-align: center;">
+            <span *ngIf="!authClient">Actions</span>
+            <!-- Action Button | Create New Schedule -->
+            <button *ngIf="authClient"  mat-raised-button color="primary" (click)="CreateScheduleClient()">+ Schedule new</button>
+
+          </div>
+          </th>
+        <td mat-cell *matCellDef="let element" style="width: 250px;">
+            <!-- Action Buttons | View/Edit/Delete -->
+            <div class="actions">
+              <button mat-stroked-button (click)="ViewClient(element)">View</button>
+              <button mat-stroked-button color="primary" *ngIf="authClient && element.client.clientID == authClient.clientID" (click)="EditScheduleClient(element)">Edit</button>
+              <button mat-stroked-button color="accent" *ngIf="authClient && element.client.clientID == authClient.clientID" (click)="DeleteScheduleClient(element)">Delete</button>
+            </div>
+
+
+        </td>
+      </ng-container>
+
+    <!-- Collumns to display -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
+

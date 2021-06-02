@@ -1,0 +1,28 @@
+<mat-card>
+  <mat-card-title>Register</mat-card-title>
+
+  <!-- Register Form -->
+  <form class="example-form" [formGroup]="registerForm" (ngSubmit)="OnRegister()">
+
+    <!-- Username field -->
+    <mat-form-field class="example-full-width">
+      <mat-label>Username</mat-label>
+      <input matInput placeholder="Username" autocomplete="off" formControlName="userName">
+    </mat-form-field>
+
+    <!-- Password field -->
+    <mat-form-field class="example-full-width">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" placeholder="Password" autocomplete="off" formControlName="password">
+    </mat-form-field>
+
+    <!-- FirstName field -->
+    <mat-form-field class="example-full-width">
+      <mat-label>First Name</mat-label>
+      <input matInput placeholder="FirstName" autocomplete="off" formControlName="firstName">
+    </mat-form-field>
+
+    <!-- Action Button | Register -->
+    <button mat-stroked-button type="submit" [disabled]="registerForm.invalid"> Register </button>
+  </form>
+</mat-card>

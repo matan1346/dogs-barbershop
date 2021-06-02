@@ -1,0 +1,16 @@
+<mat-card class="schedule-wrapper">
+<mat-card-title>Schedule View</mat-card-title>
+
+
+<mat-grid-list cols="4" rowHeight="100px">
+  <mat-grid-tile
+      *ngFor="let tile of tiles"
+      [colspan]="tile.cols"
+      [rowspan]="tile.rows"
+      [style.background]="tile.color"
+      [style.font-size]="tile.size">
+    {{tile.text}}
+  </mat-grid-tile>
+</mat-grid-list>
+
+</mat-card>
