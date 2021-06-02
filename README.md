@@ -8,7 +8,7 @@
 
 ## Register Screen
 ![Image](./barber-screenshots/register1.PNG)
-## Register Screeb - username is already exist
+## Register Screeמ - Username is already exist
 ![Image](./barber-screenshots/register2.PNG)
 
 ## Login Screen
