@@ -1,5 +1,7 @@
+import { formatDate } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { BarberClient } from 'src/app/core/models/barber-client.model';
 import { ScheduleClient, ScheduleStatus } from 'src/app/core/models/schedule-client.model';
@@ -15,8 +17,13 @@ import { ViewScheduleComponent } from '../view-schedule/view-schedule.component'
 })
 export class ListClientsComponent implements OnInit {
 
-  // schedule list from server
-  scheduleList: ScheduleClient[] = null;
+  // the filtered values
+  filterValues = {};
+  // filter select values
+  filterSelectObj = [];
+  // data source of the list to do filter
+  dataSource = new MatTableDataSource();
+
   // current user object
   authClient: BarberClient= null;
   // display columns
@@ -27,9 +34,28 @@ export class ListClientsComponent implements OnInit {
     private authenticationService: AuthenticationService,
     private router: Router,
     public dialog: MatDialog
-    ) { }
+    ) {
+
+// Object to create Filter for
+this.filterSelectObj = [
+  {
+    name: 'Schedule Time',
+    columnProp: 'scheduleTimeShort',
+    options: []
+  }, {
+    name: 'Name',
+    columnProp: 'firstName',
+    options: []
+  }
+]
+
+    }
 
   async ngOnInit(): Promise<void> {
+
+    // Overrride default filter behaviour of Material Datatable
+    this.dataSource.filterPredicate = this.createFilter();
+
 
     // subscribe to authenticate user if current user object is logged in
     this.authenticationService.getLoggedClient().subscribe(x => {
@@ -40,7 +66,18 @@ export class ListClientsComponent implements OnInit {
     await this.apiService.loadListSchedules();
     // subscribe to schedule server list
     this.apiService.getSchedulesList().subscribe(schList => {
-      this.scheduleList = schList;
+      schList.map(m => {
+        // for filter
+        m['firstName'] = m.client.firstName;
+        // for filter
+        m['scheduleTimeShort'] = formatDate(m.scheduleTime, 'dd/MM/yyyy', 'en');
+        return m;
+      });
+      this.dataSource.data = schList;
+
+      this.filterSelectObj.filter((o) => {
+        o.options = this.getFilterObject(schList, o.columnProp);
+      });
     })
   }
 
@@ -94,5 +131,78 @@ export class ListClientsComponent implements OnInit {
     if(res == ScheduleStatus.OK){
       this.router.navigate(['list-clients']);
     }
+  }
+
+
+  /*** Filters Sesttings ***/
+
+
+
+  applyFilter(filterValue: string) {
+    filterValue = filterValue.trim(); // Remove whitespace
+    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+    this.dataSource.filter = filterValue;
+  }
+
+  // Called on Filter change
+  filterChange(filter, event) {
+    //let filterValues = {}
+    this.filterValues[filter.columnProp] = event.target.value.trim().toLowerCase()
+    this.dataSource.filter = JSON.stringify(this.filterValues)
+  }
+
+  // Custom filter method fot Angular Material Datatable
+  createFilter() {
+    let filterFunction = function (data: any, filter: string): boolean {
+      let searchTerms = JSON.parse(filter);
+      let isFilterSet = false;
+      for (const col in searchTerms) {
+        if (searchTerms[col].toString() !== '') {
+          isFilterSet = true;
+        } else {
+          delete searchTerms[col];
+        }
+      }
+
+      let nameSearch = () => {
+        let found = false;
+        if (isFilterSet) {
+          for (const col in searchTerms) {
+            searchTerms[col].trim().toLowerCase().split(' ').forEach(word => {
+              if (data[col].toString().toLowerCase().indexOf(word) != -1 && isFilterSet) {
+                found = true
+              }
+            });
+          }
+          return found
+        } else {
+          return true;
+        }
+      }
+      return nameSearch()
+    }
+    return filterFunction
+  }
+
+
+  // Reset table filters
+  resetFilters() {
+    this.filterValues = {}
+    this.filterSelectObj.forEach((value, key) => {
+      value.modelValue = undefined;
+    })
+    this.dataSource.filter = "";
+  }
+
+  // Get Uniqu values from columns to build filter
+  getFilterObject(fullObj, key) {
+    const uniqChk = [];
+    fullObj.filter((obj) => {
+      if (!uniqChk.includes(obj[key])) {
+        uniqChk.push(obj[key]);
+      }
+      return obj;
+    });
+    return uniqChk;
   }
 }

@@ -1,7 +1,29 @@
 <div class="list-wrapper">
-  <mat-card-title>Schedule List</mat-card-title>
+  <!-- <mat-card-title>Schedule List</mat-card-title> -->
 
-  <table mat-table [dataSource]="scheduleList" class="schedule-table mat-elevation-z8">
+  <!-- <div class="example-header">
+    <mat-form-field>
+      <input matInput (keyup)="applyFilter($event.target.value)" autocomplete="off" placeholder="Filter">
+    </mat-form-field>
+  </div> -->
+
+
+  <div >
+    <mat-form-field *ngFor="let filter of filterSelectObj" style="margin-left: 15px;">
+      <mat-label>Filter {{filter.name}}</mat-label>
+      <select matNativeControl name="{{filter.columnProp}}" [(ngModel)]="filter.modelValue"
+        (change)="filterChange(filter,$event)">
+        <option value="">-- Select {{filter.name}} --</option>
+        <option [value]="item" *ngFor="let item of filter.options">{{item}}</option>
+      </select>
+    </mat-form-field>
+    &nbsp;
+    <button mat-flat-button color="warn" (click)="resetFilters()">Reset</button>
+  </div>
+
+
+
+  <table mat-table [dataSource]="dataSource" class="schedule-table mat-elevation-z8">
 
     <!--- Note that these columns can be defined in any order.
           The actual rendered columns are set as a property on the row definition" -->

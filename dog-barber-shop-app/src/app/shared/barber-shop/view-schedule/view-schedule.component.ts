@@ -1,3 +1,4 @@
+import { formatDate } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -43,8 +44,8 @@ export class ViewScheduleComponent implements OnInit {
       {
         this.tiles = [
           {text: this.scheduleClient.client.firstName, cols: 4, rows: 1, color: 'lightblue', size: '30pt'},
-          {text: 'Schedule Time: ' + this.scheduleClient.scheduleTime, cols: 2, rows: 1, color: '#7bb6ff', size: '15pt'},
-          {text: 'Register Date: ' + this.scheduleClient.registeredRecord, cols: 2, rows: 1, color: 'rgb(65 173 236)', size: '15pt'},
+          {text: 'Schedule Time: ' + formatDate(this.scheduleClient.scheduleTime,'dd/MM/yyyy HH:mm','en'), cols: 2, rows: 1, color: '#7bb6ff', size: '15pt'},
+          {text: 'Register Date: ' + formatDate(this.scheduleClient.registeredRecord,'dd/MM/yyyy HH:mm','en'), cols: 2, rows: 1, color: 'rgb(65 173 236)', size: '15pt'},
         ]
       }
       else // else -> set tiles to be null
